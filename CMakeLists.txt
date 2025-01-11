@@ -36,7 +36,7 @@ FetchContent_MakeAvailable(patterns)
 FetchContent_Declare(
 		math
 		GIT_REPOSITORY https://github.com/xitren/math.git
-		GIT_TAG        v1.0.0
+		GIT_TAG        v1.0.1
 )
 FetchContent_MakeAvailable(math)
 
