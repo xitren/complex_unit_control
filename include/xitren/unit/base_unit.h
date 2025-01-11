@@ -62,7 +62,10 @@ protected:
     void
     data(void const* src, time_type const& nd) override;
 
-    void state(state_use_type);
+    void
+    state(state_use_type const&);
+    void
+    speed(speed_type const&);
 
 private:
     coord_type     position_{};
@@ -70,7 +73,9 @@ private:
     angle_type     angle_{};
     coord_type     view_target_{};
     coord_type     move_target_{};
+    speed_type     speed_target_{};
     state_use_type state_{};
+    state_type     state_val_{state_type::idle};
 
     base_parameters parameters_{};
 

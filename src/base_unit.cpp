@@ -48,7 +48,6 @@ base_unit::teleport(base_unit::coord_type const& point)
     position_      = point;
     if (old != position_) {
         coords_obs_.notify_observers(position_);
-        speed_obs_.notify_observers(speed_type{position_.first - old.first, position_.second - old.second});
     }
 }
 
@@ -63,12 +62,22 @@ base_unit::rotate(base_unit::angle_type const& angle)
 }
 
 void
-base_unit::state(base_unit::state_use_type value)
+base_unit::state(base_unit::state_use_type const& value)
 {
-    auto const old = state_;
-    state_         = value;
-    if (old != state_) {
-        state_obs_.notify_observers(static_cast<state_type>(value.to_ulong()));
+    auto const old = state_val_;
+    state_val_     = static_cast<state_type>(value.to_ulong());
+    if (old != state_val_) {
+        state_obs_.notify_observers(state_val_);
+    }
+}
+
+void
+base_unit::speed(base_unit::speed_type const& value)
+{
+    auto const old = speed_;
+    speed_         = value;
+    if (old != speed_) {
+        speed_obs_.notify_observers(speed_);
     }
 }
 
@@ -88,20 +97,20 @@ base_unit::update_view(base_unit::coord_type const& point)
 {
     auto opposite  = static_cast<double>(point.second - position_.second);
     auto adjacent  = static_cast<double>(point.first - position_.first);
-    auto angle_rad = std::tan(opposite / adjacent);
+    auto angle_rad = std::atan2(opposite, adjacent);
     auto angle     = rad_to_deg(angle_rad);
     if (std::abs(angle_ - angle) <= parameters_.angle_speed) {
         rotate(angle);
         state_[1] = false;
         state(state_);
     } else {
+        state_[1] = true;
+        state(state_);
         if ((angle - angle_) < 0) {
             rotate(angle_ - parameters_.angle_speed);
         } else {
             rotate(angle_ + parameters_.angle_speed);
         }
-        state_[1] = true;
-        state(state_);
     }
 }
 
@@ -113,7 +122,8 @@ base_unit::move_to(base_unit::coord_type const& point, base_unit::speed_type con
     xitren::math::bezier_point<int> p2{point.first - speed.first, point.second - speed.second};
     xitren::math::bezier_point<int> p3{point.first, point.second};
     trajectory_.update(std::array<xitren::math::bezier_point<int>, 4>{p0, p1, p2, p3});
-    traj_step_ = 0;
+    traj_step_    = 0;
+    speed_target_ = speed;
     update_move();
 }
 
@@ -123,19 +133,18 @@ base_unit::update_move()
     double     speed_{};
     auto const reduced_size = trajectory_.size() - 1;
     for (; traj_step_ < reduced_size && speed_ <= parameters_.speed; traj_step_++) {
-        double const x_pow = (trajectory_[traj_step_].x - trajectory_[traj_step_ + 1].x)
-                             * (trajectory_[traj_step_].x - trajectory_[traj_step_ + 1].x);
-        double const y_pow = (trajectory_[traj_step_].y - trajectory_[traj_step_ + 1].y)
-                             * (trajectory_[traj_step_].y - trajectory_[traj_step_ + 1].y);
-        double const dist = std::sqrt((x_pow) + (y_pow));
+        double const dist = std::hypot(trajectory_[traj_step_].x - trajectory_[traj_step_ + 1].x,
+                                       trajectory_[traj_step_].y - trajectory_[traj_step_ + 1].y);
         speed_ += dist;
     }
     if (traj_step_ < reduced_size) {
-        teleport(coord_type{trajectory_[traj_step_].x, trajectory_[traj_step_].y});
         state_[0] = true;
         state(state_);
+        speed(speed_type{trajectory_[traj_step_].x - position_.first, trajectory_[traj_step_].y - position_.second});
+        teleport(coord_type{trajectory_[traj_step_].x, trajectory_[traj_step_].y});
     } else {
         teleport(coord_type{trajectory_.back().x, trajectory_.back().y});
+        speed(speed_target_);
         state_[0] = false;
         state(state_);
     }
