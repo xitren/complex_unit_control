@@ -7,8 +7,8 @@
 
 **[IN PROGRESS]** Goods logistic
 * **[DONE]** Static allocator
-* Material object class (Id, Base price, Age, Base elements Id's)
-* Store Energy (with some capacity)
+* **[DONE]** Material object class (Id, Base price, Age, Base elements Id's)
+* **[DONE]** Store Energy (with some capacity)
 * Store Gas/Liquid (partitioned by S/M/L/XL with some capacity)
 * Store Solid (with some capacity)
 * Transfer engine
