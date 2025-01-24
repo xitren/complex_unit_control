@@ -32,7 +32,7 @@ include(FetchContent)
 FetchContent_Declare(
 		patterns
 		GIT_REPOSITORY https://github.com/xitren/patterns.git
-		GIT_TAG        v1.0.4
+		GIT_TAG        v1.0.5
 )
 FetchContent_MakeAvailable(patterns)
 

@@ -5,6 +5,12 @@
 
 namespace xitren::unit {
 
+material::name_type
+material::name() const
+{
+    return name;
+}
+
 material::id_type
 material::id() const
 {

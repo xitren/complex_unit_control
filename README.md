@@ -11,6 +11,7 @@
 * **[DONE]** Store Energy (with some capacity)
 * Store Gas/Liquid (partitioned by S/M/L/XL with some capacity)
 * Store Solid (with some capacity)
+* Store Containers (with some capacity)
 * Transfer engine
 
 Economics

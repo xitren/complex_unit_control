@@ -7,20 +7,20 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <memory>
 #include <numeric>
 
 namespace xitren::unit {
 
 template <std::size_t Size>
 class material_complex : public material {
-    using components_type = std::array<material, Size>;
-    using id_type         = std::string_view;
+    using components_type = std::array<std::unique_ptr<material>, Size>;
 
 public:
     const id_type id;
 
     material_complex(id_type const& name, material::price_type const& price, components_type const& components)
-        : id{name}, material{price}, components_{components}, comp_cost_{accumulate_costs(price, components_)}
+        : id{name}, material{name, price}, components_{components}, comp_cost_{accumulate_costs(price, components_)}
     {}
 
     price_type
