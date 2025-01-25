@@ -14,7 +14,16 @@ namespace xitren::storage {
 
 template <xitren::storage::capacity Cap>
 class gas_liquid : public istore<Cap, gas_liquid> {
+    using istore<Cap, gas_liquid>::load_;
+    using istore<Cap, gas_liquid>::cost_;
+
+    using istore<Cap, gas_liquid>::mean_price;
+
 public:
+    using istore<Cap, gas_liquid>::capacity;
+    using istore<Cap, gas_liquid>::load;
+    using istore<Cap, gas_liquid>::reset_cost;
+
     using status_type      = storage_status_type;
     using hash_type        = std::hash<unit::material::name_type>;
     using value_type       = std::size_t;
@@ -49,18 +58,6 @@ public:
         return occuped_;
     }
 
-    int
-    capacity() const
-    {
-        return static_cast<int>(Cap);
-    }
-
-    int
-    load() const
-    {
-        return load_;
-    }
-
     status_type
     push(mat_type mat)
     {
@@ -68,17 +65,18 @@ public:
             return status_type::bad_material_type;
         }
         auto hash       = hash_type{}(mat->name());
-        auto comparator = [&](gas_storage_type& iter) { return iter.hash == hash; };
-        auto it         = std::find_if(storages_.begin(), storages_.begin() + occuped_, comparator);
+        auto comparator = [&](gas_storage_type& iter) {
+            return iter.hash == hash
+                   && std::equal(mat->name().begin(), mat->name().end(), iter.name_id.begin(), iter.name_id.end());
+        };
+        auto it = std::find_if(storages_.begin(), storages_.begin() + occuped_, comparator);
         if (it != (storages_.begin() + occuped_)) {
-            if (std::equal(mat->name().begin(), mat->name().end(), it->name_id.begin(), it->name_id.end())) {
-                if ((it->loaded + mat->capacity()) <= it->capacity) {
-                    auto mean = mean_price(it->price, it->loaded, mat->cost(), mat->capacity());
-                    it->loaded += mat->capacity();
-                    load_ += mat->capacity();
-                    it->price = mean;
-                    return status_type::ok;
-                }
+            if ((it->loaded + mat->capacity()) <= it->capacity) {
+                auto mean = mean_price(it->price, it->loaded, mat->cost(), mat->capacity());
+                it->loaded += mat->capacity();
+                load_ += mat->capacity();
+                it->price = mean;
+                return status_type::ok;
             }
         }
         if (occuped_ >= storages_.size()) {
@@ -97,22 +95,23 @@ public:
         return status_type::ok;
     }
 
-    unit::material*
+    mat_type
     pull(unit::material::name_type const& mat_id, value_type val)
     {
         auto hash       = hash_type{}(mat_id);
-        auto comparator = [&](gas_storage_type& iter) { return iter.hash == hash; };
-        auto it         = std::find_if(storages_.begin(), storages_.begin() + occuped_, comparator);
+        auto comparator = [&](gas_storage_type& iter) {
+            return iter.hash == hash
+                   && std::equal(mat_id.begin(), mat_id.end(), iter.name_id.begin(), iter.name_id.end());
+        };
+        auto it = std::find_if(storages_.begin(), storages_.begin() + occuped_, comparator);
         if (it != (storages_.begin() + occuped_)) {
-            if (std::equal(mat_id.begin(), mat_id.end(), it->name_id.begin(), it->name_id.end())) {
-                it->loaded -= val;
-                auto ptr = new unit::material(mat_id, it->price, val, it->mat_class);
-                if (it->loaded == 0) {
-                    std::remove(storages_.begin(), storages_.begin() + occuped_, (*it));
-                    occuped_--;
-                }
-                return ptr;
+            it->loaded -= val;
+            auto ptr = unit::material(mat_id, it->price + cost_, val, it->mat_class);
+            if (it->loaded == 0) {
+                std::remove(storages_.begin(), storages_.begin() + occuped_, (*it));
+                occuped_--;
             }
+            return std::make_unique<unit::material>(ptr);
         }
         return nullptr;
     }
@@ -120,13 +119,6 @@ public:
 private:
     gas_storages_type storages_{};
     value_type        occuped_{};
-    value_type        load_{};
-
-    value_type
-    mean_price(value_type price1, value_type cap1, value_type price2, value_type cap2)
-    {
-        return (price1 * cap1 + price2 * cap2) / (cap1 + cap2);
-    }
 };
 
 }    // namespace xitren::storage

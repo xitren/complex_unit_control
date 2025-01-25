@@ -1,6 +1,7 @@
+#include <xitren/unit/material_complex.hpp>
+
 #include <gtest/gtest.h>
 #include <xitren/unit/material.h>
-#include <xitren/unit/material_complex.h>
 
 #include <algorithm>
 #include <array>
@@ -40,7 +41,8 @@ TEST(material_test, complex)
     EXPECT_TRUE(mat3->cost() == 100);
 
     auto mat_c = std::make_unique<material_complex<3>>(
-        "Complex material"sv, 100, std::array<material::price_type, 3>{{mat1->cost(), mat2->cost(), mat3->cost()}});
+        "Complex material"sv, 100, std::array<material::price_type, 3>{{mat1->cost(), mat2->cost(), mat3->cost()}},
+        material_class::solid);
 
     EXPECT_EQ(mat_c->cost(), (100 + 101 + 102 + 100));
 }

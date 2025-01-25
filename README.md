@@ -10,7 +10,7 @@
 * **[DONE]** Material object class (Id, Base price, Age, Base elements Id's)
 * **[DONE]** Store Energy (with some capacity)
 * **[DONE]** Store Gas/Liquid (partitioned by S/M/L/XL with some capacity)
-* Store Solid (with some capacity)
+* **[DONE]** Store Solid (with some capacity)
 * Store Containers (with some capacity)
 * Transfer engine
 

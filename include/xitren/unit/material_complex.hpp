@@ -21,7 +21,7 @@ public:
 
     material_complex(name_type const& name, material::price_type const& price, components_type const& components,
                      material_class type)
-        : id{name}, material{name, price, Size, type}, comp_cost_{accumulate_costs(price, components, Size)}
+        : id{name}, material{name, price, Size, type}, comp_cost_{accumulate_costs(price, components)}
     {}
 
     price_type
