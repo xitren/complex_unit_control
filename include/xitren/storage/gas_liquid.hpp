@@ -13,16 +13,9 @@
 namespace xitren::storage {
 
 template <xitren::storage::capacity Cap>
-class gas : public istore<Cap, gas> {
+class gas_liquid : public istore<Cap, gas_liquid> {
 public:
-    using status_type = enum class error {
-        ok,
-        loadded_partually,
-        storage_is_full,
-        no_place_for_new_type,
-        doesnt_exist,
-        bad_material_type
-    };
+    using status_type      = storage_status_type;
     using hash_type        = std::hash<unit::material::name_type>;
     using value_type       = std::size_t;
     using mat_type         = std::unique_ptr<unit::material>;
@@ -51,6 +44,12 @@ public:
     }
 
     int
+    used_barrels() const
+    {
+        return occuped_;
+    }
+
+    int
     capacity() const
     {
         return static_cast<int>(Cap);
@@ -68,13 +67,6 @@ public:
         if ((mat->type() != unit::material_class::gas) && (mat->type() != unit::material_class::liquid)) {
             return status_type::bad_material_type;
         }
-        if (occuped_ >= storages_.size()) {
-            if (load() == capacity()) {
-                return status_type::storage_is_full;
-            } else {
-                return status_type::no_place_for_new_type;
-            }
-        }
         auto hash       = hash_type{}(mat->name());
         auto comparator = [&](gas_storage_type& iter) { return iter.hash == hash; };
         auto it         = std::find_if(storages_.begin(), storages_.begin() + occuped_, comparator);
@@ -84,9 +76,16 @@ public:
                     auto mean = mean_price(it->price, it->loaded, mat->cost(), mat->capacity());
                     it->loaded += mat->capacity();
                     load_ += mat->capacity();
-                    it->price = mean * it->loaded;
+                    it->price = mean;
                     return status_type::ok;
                 }
+            }
+        }
+        if (occuped_ >= storages_.size()) {
+            if (load() == capacity()) {
+                return status_type::storage_is_full;
+            } else {
+                return status_type::no_place_for_new_type;
             }
         }
         {
@@ -107,11 +106,12 @@ public:
         if (it != (storages_.begin() + occuped_)) {
             if (std::equal(mat_id.begin(), mat_id.end(), it->name_id.begin(), it->name_id.end())) {
                 it->loaded -= val;
+                auto ptr = new unit::material(mat_id, it->price, val, it->mat_class);
                 if (it->loaded == 0) {
                     std::remove(storages_.begin(), storages_.begin() + occuped_, (*it));
                     occuped_--;
                 }
-                return new unit::material(mat_id, it->price, val, it->mat_class);
+                return ptr;
             }
         }
         return nullptr;

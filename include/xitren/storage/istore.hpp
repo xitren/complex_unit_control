@@ -9,18 +9,18 @@
 
 namespace xitren::storage {
 
+enum class storage_status_type {
+    ok,
+    loadded_partually,
+    storage_is_full,
+    no_place_for_new_type,
+    doesnt_exist,
+    bad_material_type
+};
+
 template <xitren::storage::capacity Cap, template <xitren::storage::capacity> class Derived>
 class istore {
 public:
-    using status_type = enum class error {
-        ok,
-        loadded_partually,
-        storage_is_full,
-        no_place_for_new_type,
-        doesnt_exist,
-        bad_material_type
-    };
-
     int
     capacity() const
     {
@@ -33,13 +33,13 @@ public:
         return static_cast<Derived<Cap> const*>(this)->load();
     }
 
-    status_type
+    storage_status_type
     push(std::unique_ptr<unit::material> mat)
     {
         return static_cast<Derived<Cap> const*>(this)->push(std::move(mat));
     }
 
-    status_type
+    storage_status_type
     pull(unit::material::name_type const& mat_id)
     {
         return static_cast<Derived<Cap> const*>(this)->pull(mat_id);
