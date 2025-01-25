@@ -8,7 +8,7 @@ namespace xitren::unit {
 material::name_type
 material::name() const
 {
-    return name;
+    return name_;
 }
 
 material::id_type
@@ -33,6 +33,24 @@ material::price_type
 material::cost() const
 {
     return price_;
+}
+
+material::capacity_type
+material::capacity() const
+{
+    return capacity_;
+}
+
+material_class
+material::type() const
+{
+    return type_;
+}
+
+void
+material::capacity(capacity_type val)
+{
+    capacity_ = val;
 }
 
 void

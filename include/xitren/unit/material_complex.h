@@ -14,13 +14,14 @@ namespace xitren::unit {
 
 template <std::size_t Size>
 class material_complex : public material {
-    using components_type = std::array<std::unique_ptr<material>, Size>;
+    using components_type = std::array<material::price_type, Size>;
 
 public:
-    const id_type id;
+    const name_type id;
 
-    material_complex(id_type const& name, material::price_type const& price, components_type const& components)
-        : id{name}, material{name, price}, components_{components}, comp_cost_{accumulate_costs(price, components_)}
+    material_complex(name_type const& name, material::price_type const& price, components_type const& components,
+                     material_class type)
+        : id{name}, material{name, price, Size, type}, comp_cost_{accumulate_costs(price, components, Size)}
     {}
 
     price_type
@@ -30,13 +31,12 @@ public:
     }
 
 private:
-    const components_type      components_{};
     const material::price_type comp_cost_{};
 
     material::price_type
     accumulate_costs(material::price_type const& price, components_type const& components) const
     {
-        auto dash_fold = [](material::price_type a, material b) { return a + b.cost(); };
+        auto dash_fold = [](material::price_type a, material::price_type b) { return a + b; };
         return std::accumulate(components.begin(), components.end(), 0, dash_fold);
     }
 };
