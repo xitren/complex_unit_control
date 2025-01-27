@@ -26,7 +26,7 @@ public:
     using mat_type   = std::unique_ptr<unit::material>;
     using value_type = std::size_t;
 
-    istore() : comm::values::observed<std::size_t>{[&](int val) { cost_ += val; }} {}
+    istore() : comm::values::observed<value_type>{[&](value_type val) { cost_ += val; }} {}
 
     int
     capacity() const

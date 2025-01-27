@@ -46,7 +46,7 @@ public:
         }
         // this->add_observer(*mat);
         load_ += mat->capacity();
-        price_ += mat->cost();
+        price_ += mat->price();
         storages_.emplace_back(std::move(mat));
         return status_type::ok;
     }
@@ -55,15 +55,13 @@ public:
     pull(unit::material::name_type const& mat_id, value_type val = 0)
     {
         auto hash       = hash_type{}(mat_id);
-        auto comparator = [&](mat_type& ptr) {
-            return hash_type{}(ptr->name()) == hash
-                   && std::equal(mat_id.begin(), mat_id.end(), ptr->name().begin(), ptr->name().end());
-        };
-        auto it = std::find_if(storages_.begin(), storages_.end(), comparator);
+        auto comparator = [&](mat_type& ptr) { return hash_type{}(ptr->name()) == hash && mat_id == ptr->name(); };
+        auto it         = std::find_if(storages_.begin(), storages_.end(), comparator);
         if (it != (storages_.end())) {
             load_ -= (*it)->capacity();
-            price_ -= (*it)->cost();
-            auto ptr = unit::material(mat_id, (*it)->cost() + cost_, (*it)->capacity(), unit::material_class::solid);
+            price_ -= (*it)->price();
+            auto ptr = unit::material(mat_id, (*it)->price() + (*it)->cost() + cost_, (*it)->capacity(),
+                                      unit::material_class::solid);
             std::remove(storages_.begin(), storages_.end(), (*it));
             return std::make_unique<unit::material>(ptr);
         }

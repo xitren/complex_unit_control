@@ -2,19 +2,19 @@
 
 #include <xitren/comm/observer.hpp>
 
+#include <xitren/unit/material_types.h>
+
 #include <array>
 #include <atomic>
 #include <chrono>
 
 namespace xitren::unit {
 
-enum class material_class { gas, liquid, solid, container };
-
 class material : public xitren::comm::observer<std::size_t> {
     static constexpr std::size_t base_price{100UL};
 
 public:
-    using name_type                 = std::string_view;
+    using name_type                 = material_types;
     using id_type                   = std::size_t;
     using price_type                = std::size_t;
     using time_type                 = std::size_t;
@@ -46,17 +46,18 @@ protected:
     void
     data(void const* src, price_type const& nd) override;
 
-    void
-    capacity(capacity_type val);
+    // void
+    // capacity(capacity_type val);
 
 private:
     static inline atomic_id_type id_pool{};
-    id_type                      id_{id_pool++};
-    name_type                    name_{"Base"};
-    time_type                    birth_date_{now_in_ms()};
-    price_type                   price_{base_price};
-    capacity_type                capacity_{1};
-    material_class               type_{material_class::solid};
+    const id_type                id_{id_pool++};
+    const name_type              name_{name_type::helium};
+    const time_type              birth_date_{now_in_ms()};
+    const price_type             price_{base_price};
+    const capacity_type          capacity_{1};
+    const material_class         type_{material_class::solid};
+    price_type                   cost_{};
 
     time_type
     now_in_ms() const;

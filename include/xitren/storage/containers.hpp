@@ -52,12 +52,12 @@ public:
         if (storages_.contains(mat->name())) {
             auto has = storages_[mat->name()];
             storages_[mat->name()].capacity += mat->capacity();
-            storages_[mat->name()].price = mean_price(has.capacity, has.price, mat->capacity(), mat->cost());
+            storages_[mat->name()].price = mean_price(has.price, has.capacity, mat->price(), mat->capacity());
         } else {
-            storages_[mat->name()] = record_type{mat->capacity(), mat->cost() / mat->capacity(), mat->capacity()};
+            storages_[mat->name()] = record_type{mat->capacity(), mat->price(), mat->capacity()};
         }
         load_ += mat->capacity();
-        price_ += mat->cost();
+        price_ += mat->price();
         return status_type::ok;
     }
 
@@ -66,9 +66,9 @@ public:
     {
         if (storages_.contains(mat_id)) {
             if (storages_[mat_id].capacity >= storages_[mat_id].capacity_of_one) {
-                auto& it  = storages_[mat_id];
-                auto  ptr = unit::material(mat_id, it.price * it.capacity_of_one + cost_, it.capacity_of_one,
-                                           unit::material_class::container);
+                auto& it = storages_[mat_id];
+                auto  ptr
+                    = unit::material(mat_id, it.price + cost_, it.capacity_of_one, unit::material_class::container);
                 it.capacity -= it.capacity_of_one;
                 load_ -= it.capacity_of_one;
                 price_ -= it.price;

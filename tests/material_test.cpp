@@ -1,4 +1,5 @@
-#include <xitren/unit/material_complex.hpp>
+#include <xitren/comm/values/observable.hpp>
+#include <xitren/unit/factory.hpp>
 
 #include <gtest/gtest.h>
 #include <xitren/unit/material.h>
@@ -21,28 +22,26 @@ TEST(material_test, base)
     mat2->notification(nullptr, 1);
     mat2->notification(nullptr, 1);
 
-    EXPECT_TRUE(mat1->cost() == 101);
-    EXPECT_TRUE(mat2->cost() == 102);
-    EXPECT_TRUE(mat3->cost() == 100);
+    EXPECT_EQ(mat1->cost(), 1);
+    EXPECT_EQ(mat2->cost(), 2);
+    EXPECT_EQ(mat3->cost(), 0);
 }
 
-TEST(material_test, complex)
+TEST(material_test, factory)
 {
-    auto mat1 = std::make_unique<material>();
-    auto mat2 = std::make_unique<material>();
-    auto mat3 = std::make_unique<material>();
+    int                                              i{};
+    xitren::comm::values::observable<std::size_t, 1> ticks{};
+    auto                                             mat1 = std::make_unique<product<material_types::ice>>(308, 154);
 
-    mat1->notification(nullptr, 1);
-    mat2->notification(nullptr, 1);
-    mat2->notification(nullptr, 1);
+    factory<material_types::water> fact(
+        5,
+        [&](std::unique_ptr<product<material_types::water>> prod) {
+            std::cout << "Generated " << prod->price() << std::endl;
+            i++;
+        },
+        std::move(mat1));
 
-    EXPECT_TRUE(mat1->cost() == 101);
-    EXPECT_TRUE(mat2->cost() == 102);
-    EXPECT_TRUE(mat3->cost() == 100);
-
-    auto mat_c = std::make_unique<material_complex<3>>(
-        "Complex material"sv, 100, std::array<material::price_type, 3>{{mat1->cost(), mat2->cost(), mat3->cost()}},
-        material_class::solid);
-
-    EXPECT_EQ(mat_c->cost(), (100 + 101 + 102 + 100));
+    ticks.add_observer(fact);
+    ticks = 5;
+    EXPECT_EQ(i, 154);
 }

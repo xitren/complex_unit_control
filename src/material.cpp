@@ -26,13 +26,13 @@ material::age() const
 material::price_type
 material::price() const
 {
-    return base_price;
+    return price_;
 }
 
 material::price_type
 material::cost() const
 {
-    return price_;
+    return cost_;
 }
 
 material::capacity_type
@@ -47,16 +47,16 @@ material::type() const
     return type_;
 }
 
-void
-material::capacity(capacity_type val)
-{
-    capacity_ = val;
-}
+// void
+// material::capacity(capacity_type val)
+// {
+//     capacity_ = val;
+// }
 
 void
 material::data(void const* src, price_type const& nd)
 {
-    price_ += nd;
+    cost_ += nd;
 }
 
 material::time_type
